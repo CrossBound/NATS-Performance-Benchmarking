@@ -1,6 +1,5 @@
 ﻿using NATS.Client;
 using System;
-using System.Threading;
 
 namespace NATS_WorkQueue.Consumer
 {
@@ -15,30 +14,6 @@ namespace NATS_WorkQueue.Consumer
             Console.WriteLine("Starting consumer");
             try
             {
-                Console.CancelKeyPress += (sender, args) =>
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Cancelling...");
-                    _running = false;
-                    if (_subscription != null)
-                    {
-                        _subscription.Drain(500);
-                        _subscription.Dispose();
-                        _subscription = null;
-                        Console.WriteLine("Subscription disposed");
-                    }
-
-                    if (_connection != null)
-                    {
-                        _connection.Drain(1000);
-                        _connection.Close();
-                        _connection.Dispose();
-                        _connection = null;
-                        Console.WriteLine("Connection disposed");
-                        Thread.Sleep(100);
-                    }
-                };
-
                 string url = $"nats://{args[0]}:{args[1]}";
                 Console.Title = $"Consumer - {url}";
 

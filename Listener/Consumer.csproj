@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>consumer</AssemblyName>
     <RootNamespace>NATS_WorkQueue.Consumer</RootNamespace>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

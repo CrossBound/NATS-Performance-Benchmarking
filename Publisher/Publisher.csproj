@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>producer</AssemblyName>
     <RootNamespace>NATS_WorkQueue.Publisher</RootNamespace>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
