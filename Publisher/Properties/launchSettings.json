@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Publisher": {
+      "commandName": "Project",
+      "commandLineArgs": "localhost 4222"
+    }
+  }
+}
