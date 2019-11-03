@@ -24,6 +24,13 @@ namespace NATS_WorkQueue.Publisher
         static void Main(string[] args)
         {
             Console.WriteLine("Starting publisher");
+
+            Console.CancelKeyPress += (sender, args) =>
+            {
+                args.Cancel = true;
+                _running = false;
+            };
+
             try
             {
                 string url = $"nats://{args[0]}:{args[1]}";
@@ -38,8 +45,8 @@ namespace NATS_WorkQueue.Publisher
                 options.Pedantic = false;
                 options.Verbose = false;
 
-                _connection = new ConnectionFactory().CreateConnection(options);
                 string inbox = Guid.NewGuid().ToString("N");
+                _connection = new ConnectionFactory().CreateConnection(options);
                 _subscription = _connection.SubscribeSync(inbox);
 
                 var payload = new byte[16];
@@ -67,14 +74,14 @@ namespace NATS_WorkQueue.Publisher
                     catch (Exception error)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Connection Error: {_connection.LastError?.Message ?? "n/a"}");
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Local Error: {error.Message}");
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Connection Error: ({_connection.LastError?.GetType()?.Name ?? "n/a"}) {_connection.LastError?.Message ?? "n/a"}");
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Local Error: ({error.GetType().Name}) {error.Message}");
 
                         var inner = error.InnerException;
                         var indention = "   ";
                         while(inner != null)
                         {
-                            Console.WriteLine($"{indention} Inner Error: {inner.Message}");
+                            Console.WriteLine($"{indention} Inner Error: ({inner.GetType().Name}) {inner.Message}");
                             indention += "   ";
                             inner = inner.InnerException;
                         }
@@ -91,6 +98,16 @@ namespace NATS_WorkQueue.Publisher
                 Console.Write(error.ToString());
                 Console.ResetColor();
             }
+            finally
+            {
+                _subscription?.Dispose();
+                _connection?.Dispose();
+            }
+
+#if DEBUG
+            Console.Write("Press any key to exit: ");
+            Console.ReadKey();
+#endif
         }
     }
 }
