@@ -50,17 +50,38 @@ namespace NATS_WorkQueue.Publisher
                 while (_running)
                 {
                     counter++;
+                    try
+                    {
+                        startTime = Stopwatch.GetTimestamp();
+                        BitConverter.GetBytes(counter).CopyTo(payload, 0);
+                        BitConverter.GetBytes(startTime).CopyTo(payload, 8);
 
-                    startTime = Stopwatch.GetTimestamp();
-                    BitConverter.GetBytes(counter).CopyTo(payload, 0);
-                    BitConverter.GetBytes(startTime).CopyTo(payload, 8);
+                        _connection.Publish("queue", inbox, payload);
+                        _connection.Flush(2000);
+                        var response = _subscription.NextMessage(2000);
 
-                    _connection.Publish("queue", inbox, payload);
-                    _connection.Flush();
-                    var response = _subscription.NextMessage();
-                    endTime = Stopwatch.GetTimestamp();
-                    msTaken = GetMillisecondsFromStopWatchTicks(endTime - startTime);
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Published in {msTaken:N3} ms");
+                        endTime = Stopwatch.GetTimestamp();
+                        msTaken = GetMillisecondsFromStopWatchTicks(endTime - startTime);
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Published in {msTaken:N3} ms");
+                    }
+                    catch (Exception error)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Connection Error: {_connection.LastError?.Message ?? "n/a"}");
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Local Error: {error.Message}");
+
+                        var inner = error.InnerException;
+                        var indention = "   ";
+                        while(inner != null)
+                        {
+                            Console.WriteLine($"{indention} Inner Error: {inner.Message}");
+                            indention += "   ";
+                            inner = inner.InnerException;
+                        }
+
+                        Console.ResetColor();
+                    }
+
                     Thread.Sleep(1000);
                 }
             }
