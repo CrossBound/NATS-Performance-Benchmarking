@@ -2,7 +2,7 @@
   "profiles": {
     "Publisher": {
       "commandName": "Project",
-      "commandLineArgs": "localhost 4222"
+      "commandLineArgs": "172.16.1.118 4222"
     }
   }
 }

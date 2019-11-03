@@ -32,6 +32,7 @@ namespace NATS_WorkQueue.Consumer
                     var message = _subscription.NextMessage();
                     
                     _connection.Publish(message.Reply, message.Data);
+                    _connection.Flush();
                 }
             }
             catch (Exception error)
