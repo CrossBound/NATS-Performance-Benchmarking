@@ -44,6 +44,33 @@ namespace NATS_WorkQueue.Publisher
                 options.NoEcho = true;
                 options.Pedantic = false;
                 options.Verbose = false;
+                options.PingInterval = 10_000;
+
+                options.AsyncErrorEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] AsyncErrorEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                    Console.WriteLine($"    Error: {args.Error}");
+                };
+
+                options.ClosedEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ClosedEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
+
+                options.DisconnectedEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] DisconnectedEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
+
+                options.ReconnectedEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ReconnectedEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
+
+                options.ServerDiscoveredEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ServerDiscoveredEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
 
                 string inbox = Guid.NewGuid().ToString("N");
                 _connection = new ConnectionFactory().CreateConnection(options);
@@ -69,12 +96,12 @@ namespace NATS_WorkQueue.Publisher
 
                         endTime = Stopwatch.GetTimestamp();
                         msTaken = GetMillisecondsFromStopWatchTicks(endTime - startTime);
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Published in {msTaken:N3} ms");
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Published in {msTaken:N3} ms ({String.Join(',', _connection.DiscoveredServers)})");
                     }
                     catch (Exception error)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Connection Error: ({_connection.LastError?.GetType()?.Name ?? "n/a"}) {_connection.LastError?.Message ?? "n/a"}");
+                        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Connection Error: [{_connection.ConnectedUrl}] ({_connection.LastError?.GetType()?.Name ?? "n/a"}) {_connection.LastError?.Message ?? "n/a"}");
                         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Local Error: ({error.GetType().Name}) {error.Message}");
 
                         var inner = error.InnerException;
@@ -105,8 +132,9 @@ namespace NATS_WorkQueue.Publisher
             }
 
 #if DEBUG
-            Console.Write("Press any key to exit: ");
-            Console.ReadKey();
+            Console.WriteLine();
+            Console.Write("Press enter to exit: ");
+            Console.ReadLine();
 #endif
         }
     }

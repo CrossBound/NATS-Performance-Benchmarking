@@ -22,6 +22,33 @@ namespace NATS_WorkQueue.Consumer
                 options.NoEcho = true;
                 options.Pedantic = false;
                 options.Verbose = false;
+                options.PingInterval = 10_000;
+
+                options.AsyncErrorEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] AsyncErrorEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                    Console.WriteLine($"    Error: {args.Error}");
+                };
+
+                options.ClosedEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ClosedEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
+
+                options.DisconnectedEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] DisconnectedEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
+
+                options.ReconnectedEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ReconnectedEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
+
+                options.ServerDiscoveredEventHandler += (sender, args) =>
+                {
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] ServerDiscoveredEventHandler fired [ConnectionID={args.Conn.ConnectedId ?? "n/a"}; ConnectionURL={args.Conn.ConnectedUrl ?? "n/a"};]");
+                };
 
                 _connection = new ConnectionFactory().CreateConnection(options);
                 _subscription = _connection.SubscribeSync("queue");
